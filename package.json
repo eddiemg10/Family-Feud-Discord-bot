@@ -1,18 +1,23 @@
 {
   "name": "family-feud-discord-bot",
   "version": "1.0.0",
-  "description": "",
+  "description": "Discord Bot that lets you play family feud",
   "main": "index.js",
+  "dependencies": {
+    "discord.js": "^13.6.0"
+  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eddiemg10/Family-Feud-Discord-bot.git"
+  },
+  "author": "Eddie",
   "license": "ISC",
-  "dependencies": {
-    "@discordjs/builders": "^0.12.0",
-    "@discordjs/rest": "^0.3.0",
-    "discord-api-types": "^0.26.1",
-    "discord.js": "^13.6.0"
-  }
+  "bugs": {
+    "url": "https://github.com/eddiemg10/Family-Feud-Discord-bot/issues"
+  },
+  "homepage": "https://github.com/eddiemg10/Family-Feud-Discord-bot#readme"
 }

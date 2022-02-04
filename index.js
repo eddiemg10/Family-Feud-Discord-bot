@@ -1,55 +1,42 @@
-// Require the necessary discord.js classes
+const Discord = require("discord.js");
+
+const config = require("./config.json");
+
+const Client = require("./structures/Client.js");
+
+const client = new Client();
+
+const commands = new Discord.Collection;
+
 const fs = require('fs');
-const { Client, Collection, Intents } = require('discord.js');
-const { token } = require('./config.json');
+fs.readdirSync("./commands")
+    .filter(file => file.endsWith('.js'))
+    .forEach(file => {
+    const command = require(`./commands/${file}`);
+    console.log(`Command ${command.name} loaded`);
+    client.commands.set(command.name, command);
+    });
 
-// Create a new client instance
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+client.on('ready', () => {
+    console.log("Bot is online!");
+});
 
-client.commands = new Collection();
+client.on('messageCreate', message =>{
 
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
+    if(!message.content.startsWith(config.prefix)){
+        return;
+    }
 
-for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
-	// Set a new item in the Collection
-	// With the key as the command name and the value as the exported module
-	client.commands.set(command.data.name, command);
-}
+    const args = message.content.substring(config.prefix.length).split(/ +/);
 
-for (const file of eventFiles) {
-	const event = require(`./events/${file}`);
-	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args));
-	} else {
-		client.on(event.name, (...args) => event.execute(...args));
-	}
-}
+    const command = client.commands.find(cmd => cmd.name == args[0]);
 
-// const command = require('./commands');
+    if(!command){
+        return message.reply(`**${args[0]}** is not a valid command!`);
+    }
 
-// //permissions: 543522552896
-
-// // When the client is ready, run this code (only once)
-// client.on('ready', () => {
-// 	console.log('Ready!');
-// });
-
-// client.on('interactionCreate', async interaction => {
-// 	if (!interaction.isCommand()) return;
-
-// 	const { commandName } = interaction;
-
-// 	if (commandName === 'ping') {
-// 		await interaction.reply('Pong!');
-// 	} else if (commandName === 'server') {
-// 		await interaction.reply(`Server name: ${interaction.guild.name}\nTotal members: ${interaction.guild.memberCount}`);
-// 	} else if (commandName === 'user') {
-// 		await interaction.reply(`Your tag: ${interaction.user.tag}\nYour id: ${interaction.user.id}`);
-// 	}
-// });
+    command.run(message, args, client);
+});
 
 
-// Login to Discord with your client's token
-client.login(token);
+client.login(config.token);
