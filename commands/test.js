@@ -5,7 +5,7 @@ const { MessageEmbed } = require('discord.js');
 const questions = require("../question_database/6answers.json");
 
 module.exports = new Command({
-    name: "feud",
+    name: "test",
     description: "Begins Family Feud session",
     async run(message, args, client){
 
@@ -97,7 +97,9 @@ module.exports = new Command({
         collector.on('collect', msg => {
             console.log(`Collected ${msg.content}`);
             if (msg.content === 'start'){
-                test();
+                startGame();
+                startGame();
+
             }
         });
 
@@ -107,20 +109,16 @@ module.exports = new Command({
 
         async function startGame(){
             
-            for(let i = 0; i < 1; i++){
 
-                let q = quiz[i];
+                let q = quiz[0];
                 message.channel.send(`Question: ${q.question}`);
                 let guessed = [];
 
-                if(guessed.length < 5){
+             
 
-                    for(let chances = 0; chances < 3; chances++){
+                            message.channel.send(`<@${players[0].id}> turn`);
 
-                        for(let j = 0; j < players.length; j++){
-                            message.channel.send(`<@${players[j].id}> turn`);
-
-                            const filter = msg => msg.author.id === players[j].id;
+                            const filter = msg => msg.author.id === players[0].id;
 
                             const collector = message.channel.createMessageCollector({filter, max: 1, time: 120000, errors: ['time']});
 
@@ -130,17 +128,17 @@ module.exports = new Command({
                                 console.log(`Collected ${msg.content}`);
                                 let guess = msg.content.toLowerCase();
                                 
-                                const found = quiz[i].answers.some( el => el.answer.toLowerCase().includes(guess))
+                                const found = quiz[0].answers.some( el => el.answer.toLowerCase().includes(guess))
                                 
-                                const ans = quiz[i].answers;
+                                const ans = quiz[0].answers;
                                 for(let k = 0; k < ans.length; k++){
                                     if(ans[k].answer.toLowerCase().includes(guess) && !guessed.includes(k)){
-                                        players[j].score += ans[k].points;
-                                        quiz[i].correct += 1;
+                                        players[0].score += ans[k].points;
+                                        quiz[0].correct += 1;
                                         guessed.push(k);
 
                                         msg.react('✅');
-                                        msg.reply(`Points: ${players[j].score}`);
+                                        msg.reply(`Points: ${players[0].score}`);
                                     }                      
                                     msg.react('❌');
                                     // msg.reply(`Points: ${players[j].score}`);
@@ -157,11 +155,9 @@ module.exports = new Command({
 
                             console.log("One turn ended");
 
-                        }
-                    }    
-
-                }
-            }
+    
+                
+    
 
             
         }
@@ -170,10 +166,7 @@ module.exports = new Command({
         async function test(){ 
 
             let filter = m => m.author.id === message.author.id
-
-            for (let i = 0; i<3; i++){
-
-            
+       
                     message.channel.send(`Are you sure to delete all data? \`YES\` / \`NO\``).then(() => {
                      message.channel.awaitMessages(filter, {
                         max: 1,
@@ -182,6 +175,7 @@ module.exports = new Command({
                         })
                 .then(message => {
                 message = message.first()
+                console.log(message);
                 if (message.content.toUpperCase() == 'YES' || message.content.toUpperCase() == 'Y') {
                     message.channel.send(`Deleted`)
                 } else if (message.content.toUpperCase() == 'NO' || message.content.toUpperCase() == 'N') {
@@ -195,9 +189,6 @@ module.exports = new Command({
                 });
                 })
 
-                
-
-            }
 
         }
 
