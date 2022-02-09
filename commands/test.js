@@ -10,6 +10,7 @@ module.exports = new Command({
     async run(message, args, client){
 
     let players = [];
+    let allow = true;
     
     players.push(message.author);
     players[(players.length-1)].score = 0;
@@ -98,7 +99,11 @@ module.exports = new Command({
             console.log(`Collected ${msg.content}`);
             if (msg.content === 'start'){
                 startGame();
-                startGame();
+                if(allow){
+                    startGame();
+                }
+                
+                
 
             }
         });
@@ -143,6 +148,7 @@ module.exports = new Command({
                                     msg.react('❌');
                                     // msg.reply(`Points: ${players[j].score}`);
                                     answered = true;
+                                    allowed = true;
 
                                 }
                             });
@@ -156,7 +162,7 @@ module.exports = new Command({
                             console.log("One turn ended");
 
     
-                
+                allow = false;
     
 
             
