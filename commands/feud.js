@@ -91,7 +91,7 @@ module.exports = new Command({
 
     collector.on("collect", (msg) => {
       console.log(`Collected ${msg.content}`);
-      if (msg.content === "start") {
+      if (msg.content.toLowerCase() === "start") {
         startGame();
       }
     });
@@ -102,31 +102,26 @@ module.exports = new Command({
 
     async function startGame() {
       for (let i = 0; i < 1; i++) {
-        let q = quiz[i];
+        let rand = Math.floor(Math.random() * 1064);
+        // while (quiz[rand].question === undefined) {
+        //   rand++;
+        // }
+        let q = quiz[rand];
         let guessed = [];
 
-        // sendQuestion(q, guessed);
-        // message.channel.send(`Question: ${q.question}`);
-
         if (guessed.length < 5) {
-          runGame(0, q, guessed, 0, 3);
+          let max = players.length * 6;
+          runGame(0, q, guessed, 0, max);
+          // startGame();
+        } else {
+          endRound(q);
+          // startGame();
         }
       }
     }
 
     function sendQuestion(quest, guessed) {
-      let emojis = [
-        "0️⃣",
-        "1️⃣",
-        "2️⃣",
-        " 3️⃣",
-        "4️⃣",
-        " 5️⃣",
-        " 6️⃣",
-        "7️⃣",
-        "8️⃣",
-        "9️⃣",
-      ];
+      let emojis = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
 
       let q = " ```fix\n" + "QUESTION: " + quest.question + "\n\n";
       for (let i = 0; i < quest.answers.length; i++) {
@@ -190,19 +185,20 @@ module.exports = new Command({
 
       collector.on("end", (collected) => {
         console.log(`Collected ${collected.size} items`);
-        if (turns < maxturns) {
+        if (turns < maxturns && guessed.length <= 6) {
           player++;
           if (player === players.length) {
             player = 0;
           }
           runGame(player, q, guessed, turns, maxturns);
         } else {
-          endRound(q, guessed);
+          endRound(q);
         }
       });
     }
 
-    function endRound(q, guessed) {
+    function endRound(q) {
+      collector.stop();
       // let answers = "\n> ** 1.  Toys `23`**\n\n > ** 2.  Men** \n\n > ** 3.  Wow**";
       // let results = ` 1. <@${players[0].id}> \n\n 2.  <@${players[0].id}>\n\n 3.  <@${players[0].id}>`;
 
