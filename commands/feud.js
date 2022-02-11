@@ -1,208 +1,250 @@
 const Command = require("../structures/Command.js");
 
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed } = require("discord.js");
 
 const questions = require("../question_database/6answers.json");
 
 module.exports = new Command({
-    name: "feud",
-    description: "Begins Family Feud session",
-    async run(message, args, client){
-
+  name: "feud",
+  description: "Begins Family Feud session",
+  async run(message, args, client) {
     let players = [];
-    
+    let running = false;
     players.push(message.author);
-    players[(players.length-1)].score = 0;
-
+    players[players.length - 1].score = 0;
 
     var quiz = [];
 
-    for(let i = 0; i< questions.length; i++){
-        quiz.push({question: questions[i].Question, 
-                   answers: [ {answer: questions[i].Answer1, points: questions[i].P1},
-                              {answer: questions[i].Answer2, points: questions[i].P2},
-                              {answer: questions[i].Answer3, points: questions[i].P3},
-                              {answer: questions[i].Answer4, points: questions[i].P4},
-                              {answer: questions[i].Answer5, points: questions[i].P5},
-                              {answer: questions[i].Answer6, points: questions[i].P6},
-        
-                            ],
-                   correct: 0,
-                  }
-        );
-
+    for (let i = 0; i < questions.length; i++) {
+      quiz.push({
+        question: questions[i].Question,
+        answers: [
+          { answer: questions[i].Answer1, points: questions[i].P1 },
+          { answer: questions[i].Answer2, points: questions[i].P2 },
+          { answer: questions[i].Answer3, points: questions[i].P3 },
+          { answer: questions[i].Answer4, points: questions[i].P4 },
+          { answer: questions[i].Answer5, points: questions[i].P5 },
+          { answer: questions[i].Answer6, points: questions[i].P6 },
+        ],
+        correct: 0,
+      });
     }
 
+    const initialEmbed = new MessageEmbed()
+      .setColor("#0099ff")
+      .setTitle("FAMILY FEUD")
+      .setURL("https://discord.js.org/")
+      .setAuthor({
+        name: message.author.username,
+        iconURL: message.author.displayAvatarURL(),
+      })
+      .setDescription(
+        `A game of family feud has been started by ${message.author.username}\n\n`
+      )
+      .setThumbnail(
+        "https://www.google.com/url?sa=i&url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FFamily_Feud&psig=AOvVaw2sbotj8qxlHhwkEJO_ogLi&ust=1644235122122000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCMDvuKyD6_UCFQAAAAAdAAAAABAD"
+      )
+      .addFields(
+        {
+          name: "How to join",
+          value:
+            "Send **join** to join the game.\nOnce ready, the game initiator should send **start** ",
+        },
+        { name: "\u200B", value: "\u200B" }
+      )
+      .setTimestamp();
 
-   
-            const initialEmbed = new MessageEmbed()
-        .setColor('#0099ff')
-        .setTitle('FAMILY FEUD')
-        .setURL('https://discord.js.org/')
-        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL()})
-        .setDescription(`A game of family feud has been started by ${message.author.username}\n\n`)
-        .setThumbnail('https://www.google.com/url?sa=i&url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FFamily_Feud&psig=AOvVaw2sbotj8qxlHhwkEJO_ogLi&ust=1644235122122000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCMDvuKyD6_UCFQAAAAAdAAAAABAD')
-        .addFields(
-            { name: 'How to join', value: 'Send **join** to join the game.\nOnce ready, the game initiator should send **start** ' },
-            { name: '\u200B', value: '\u200B' },
-            
+    //Send reactions to Join Teams
+    message.channel.send({ embeds: [initialEmbed] }).then((embedMessage) => {
+      // embedMessage.react("🅰️");
+      // embedMessage.react("🅱️");
+    });
+
+    //Collector to initialize the game
+
+    const filter = (msg) => {
+      if (msg.content.toLowerCase() === "start") {
+        if (msg.author.id === message.author.id) {
+          msg.reply(`<@${message.author.id}> has started the game`);
+
+          return true;
+        } else {
+          msg.reply(`Only <@${message.author.id}> can start the game`);
+          return false;
+        }
+      }
+
+      if (msg.content.toLowerCase() === "join") {
+        if (players.includes(msg.author)) {
+          msg.reply(`You are already playing`);
+          return true;
+        } else {
+          players.push(msg.author);
+          players[players.length - 1].score = 0;
+          msg.reply(`<@${msg.author.id}> has joined the game`);
+          return false;
+        }
+      }
+    };
+
+    const collector = message.channel.createMessageCollector({ filter });
+
+    collector.on("collect", (msg) => {
+      console.log(`Collected ${msg.content}`);
+      if (msg.content === "start") {
+        startGame();
+      }
+    });
+
+    collector.on("end", (collected) => {
+      console.log(`Collected ${collected.size} items`);
+    });
+
+    async function startGame() {
+      for (let i = 0; i < 1; i++) {
+        let q = quiz[i];
+        let guessed = [];
+
+        // sendQuestion(q, guessed);
+        // message.channel.send(`Question: ${q.question}`);
+
+        if (guessed.length < 5) {
+          runGame(0, q, guessed, 0, 3);
+        }
+      }
+    }
+
+    function sendQuestion(quest, guessed) {
+      let emojis = [
+        "0️⃣",
+        "1️⃣",
+        "2️⃣",
+        " 3️⃣",
+        "4️⃣",
+        " 5️⃣",
+        " 6️⃣",
+        "7️⃣",
+        "8️⃣",
+        "9️⃣",
+      ];
+
+      let q = " ```fix\n" + "QUESTION: " + quest.question + "\n\n";
+      for (let i = 0; i < quest.answers.length; i++) {
+        if (guessed.includes(i)) {
+          q += i + 1 + ". " + quest.answers[i].answer + " ";
+
+          let digits = quest.answers[i].points.toString().split("");
+          let emojiScore = digits.map(Number);
+          for (let j = 0; j < emojiScore.length; j++) {
+            q += emojis[emojiScore[j]];
+          }
+          q += "\n";
+        } else {
+          q += i + 1 + ". ⬜⬜⬜⬜⬜ \n";
+        }
+      }
+      q += "\n ```";
+
+      message.channel.send(q);
+    }
+    function runGame(player, q, guessed, turns, maxturns) {
+      sendQuestion(q, guessed);
+      message.channel.send(`<@${players[player].id}> turn`);
+
+      const filter = (msg) => msg.author.id === players[player].id;
+
+      const collector = message.channel.createMessageCollector({
+        filter,
+        max: 1,
+        time: 120000,
+        errors: ["time"],
+      });
+
+      collector.on("collect", (msg) => {
+        console.log(`Collected ${msg.content}`);
+        let guess = msg.content.toLowerCase();
+
+        const ans = q.answers;
+        for (let k = 0; k < ans.length; k++) {
+          if (
+            ans[k].answer.toLowerCase().includes(guess) &&
+            !guessed.includes(k)
+          ) {
+            players[player].score += ans[k].points;
+            q.correct += 1;
+            guessed.push(k);
+            turns++;
+
+            msg.react("✅");
+            msg.reply(`Points: ${players[player].score}`);
+            return collector.stop();
+          }
+          if (k === ans.length - 1) {
+            msg.react("❌");
+            msg.reply(`Points: ${players[player].score}`);
+            turns++;
+            return collector.stop();
+          }
+        }
+      });
+
+      collector.on("end", (collected) => {
+        console.log(`Collected ${collected.size} items`);
+        if (turns < maxturns) {
+          player++;
+          if (player === players.length) {
+            player = 0;
+          }
+          runGame(player, q, guessed, turns, maxturns);
+        } else {
+          endRound(q, guessed);
+        }
+      });
+    }
+
+    function endRound(q, guessed) {
+      // let answers = "\n> ** 1.  Toys `23`**\n\n > ** 2.  Men** \n\n > ** 3.  Wow**";
+      // let results = ` 1. <@${players[0].id}> \n\n 2.  <@${players[0].id}>\n\n 3.  <@${players[0].id}>`;
+
+      let answers = "";
+      let results = "";
+      for (let i = 0; i < q.answers.length; i++) {
+        answers +=
+          "> ** " +
+          (i + 1) +
+          ".  " +
+          q.answers[i].answer +
+          " `" +
+          q.answers[i].points +
+          "`**\n\n";
+      }
+
+      for (let j = 0; j < players.length; j++) {
+        results += `${j + 1}. <@${players[j].id}> \`${players[j].score}\` \n\n`;
+      }
+
+      const initialEmbed = new MessageEmbed()
+        .setColor("#B71BCF")
+        .setTitle("ROUND ENDED")
+        .setDescription(`**QUESTION**\n ${q.question}`)
+        .setThumbnail(
+          "https://www.google.com/url?sa=i&url=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FFamily_Feud&psig=AOvVaw2sbotj8qxlHhwkEJO_ogLi&ust=1644235122122000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCMDvuKyD6_UCFQAAAAAdAAAAABAD"
         )
-        .setTimestamp()
-        
-        
-        //Send reactions to Join Teams
-        message.channel.send({ embeds: [initialEmbed] }).then(embedMessage => {
-            // embedMessage.react("🅰️");
-            // embedMessage.react("🅱️");
-        });
+        .addFields(
+          {
+            name: "SURVEY ANSWERS",
+            value: answers,
+          },
+          { name: "\u200B", value: "\u200B" },
+          {
+            name: "LEADERBOARD",
+            value: results,
+          }
+          // { name: "\u200B", value: "\u200B" }
+        )
+        .setTimestamp();
 
-
-        //Collector to initialize the game
-
-        const filter = msg => {
-
-            if(msg.content.toLowerCase() === 'start'){
-                if(msg.author.id === message.author.id){
-                    msg.reply(`<@${message.author.id}> has started the game`);
-
-                    return true;
-                }
-                else{
-                    msg.reply(`Only <@${message.author.id}> can start the game`);
-                    return false;
-
-                }
-            }
-
-            if(msg.content.toLowerCase() === 'join'){
-
-                if(players.includes(msg.author)){
-                    msg.reply(`You are already playing`);
-                    return true;
-                }
-                else{
-                    players.push(msg.author);
-                    players[(players.length-1)].score = 0;
-                    msg.reply(`<@${msg.author.id}> has joined the game`);
-                    return false;
-                }
-                
-
-            }
-
-        }
-
-        const collector = message.channel.createMessageCollector({filter});
-
-        collector.on('collect', msg => {
-            console.log(`Collected ${msg.content}`);
-            if (msg.content === 'start'){
-                test();
-            }
-        });
-
-        collector.on('end', collected => {
-            console.log(`Collected ${collected.size} items`);
-        });
-
-        async function startGame(){
-            
-            for(let i = 0; i < 1; i++){
-
-                let q = quiz[i];
-                message.channel.send(`Question: ${q.question}`);
-                let guessed = [];
-
-                if(guessed.length < 5){
-
-                    for(let chances = 0; chances < 3; chances++){
-
-                        for(let j = 0; j < players.length; j++){
-                            message.channel.send(`<@${players[j].id}> turn`);
-
-                            const filter = msg => msg.author.id === players[j].id;
-
-                            const collector = message.channel.createMessageCollector({filter, max: 1, time: 120000, errors: ['time']});
-
-                            
-
-                            collector.on('collect', msg => {
-                                console.log(`Collected ${msg.content}`);
-                                let guess = msg.content.toLowerCase();
-                                
-                                const found = quiz[i].answers.some( el => el.answer.toLowerCase().includes(guess))
-                                
-                                const ans = quiz[i].answers;
-                                for(let k = 0; k < ans.length; k++){
-                                    if(ans[k].answer.toLowerCase().includes(guess) && !guessed.includes(k)){
-                                        players[j].score += ans[k].points;
-                                        quiz[i].correct += 1;
-                                        guessed.push(k);
-
-                                        msg.react('✅');
-                                        msg.reply(`Points: ${players[j].score}`);
-                                    }                      
-                                    msg.react('❌');
-                                    // msg.reply(`Points: ${players[j].score}`);
-                                    answered = true;
-
-                                }
-                            });
-
-                            collector.on('end', collected => {
-                                console.log(`Collected ${collected.size} items`);
-                                // while(collected.size < 1);
-
-                            });
-
-                            console.log("One turn ended");
-
-                        }
-                    }    
-
-                }
-            }
-
-            
-        }
-
-
-        async function test(){ 
-
-            let filter = m => m.author.id === message.author.id
-
-            for (let i = 0; i<3; i++){
-
-            
-                    message.channel.send(`Are you sure to delete all data? \`YES\` / \`NO\``).then(() => {
-                     message.channel.awaitMessages(filter, {
-                        max: 1,
-                        time: 30000,
-                        errors: ['time']
-                        })
-                .then(message => {
-                message = message.first()
-                if (message.content.toUpperCase() == 'YES' || message.content.toUpperCase() == 'Y') {
-                    message.channel.send(`Deleted`)
-                } else if (message.content.toUpperCase() == 'NO' || message.content.toUpperCase() == 'N') {
-                    message.channel.send(`Terminated`)
-                } else {
-                    message.channel.send(`Terminated: Invalid Response`)
-                }
-                })
-                .catch(collected => {
-                    message.channel.send('Timeout');
-                });
-                })
-
-                
-
-            }
-
-        }
-
-
+      message.channel.send({ embeds: [initialEmbed] });
     }
-
-
+  },
 });
