@@ -1,19 +1,23 @@
-const Event = require('../structures/Event.js');
+const Event = require("../structures/Event.js");
 
-module.exports = new Event("messageCreate", (client, message)=>{
-    
-    if(!message.content.startsWith(client.prefix)){
-        return;
-    }
+module.exports = new Event("messageCreate", (client, message) => {
+  if (!message.content.startsWith(client.prefix)) {
+    return;
+  }
 
-    const args = message.content.substring(client.prefix.length).split(/ +/);
+  if (message.content === "alexa play despacito") {
+    return message.reply(
+      `L + ratio + you're black + the hood watched pokimane now`
+    );
+  }
 
-    const command = client.commands.find(cmd => cmd.name == args[0]);
+  const args = message.content.substring(client.prefix.length).split(/ +/);
 
-    if(!command){
-        return message.reply(`**${args[0]}** is not a valid command!`);
-    }
+  const command = client.commands.find((cmd) => cmd.name == args[0]);
 
-    command.run(message, args, client);
+  if (!command) {
+    return message.reply(`**${args[0]}** is not a valid command!`);
+  }
 
+  command.run(message, args, client);
 });

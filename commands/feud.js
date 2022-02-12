@@ -111,7 +111,7 @@ module.exports = new Command({
         let guessed = [];
 
         if (guessed.length < 5) {
-          let max = players.length * 2;
+          let max = players.length * 6;
           runGame(0, q, guessed, 0, max);
           // startGame();
         } else {
