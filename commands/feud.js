@@ -9,6 +9,7 @@ module.exports = new Command({
   description: "Begins Family Feud session",
   async run(message, args, client) {
     let players = [];
+    let round = 1;
     let running = false;
     players.push(message.author);
     players[players.length - 1].score = 0;
@@ -110,7 +111,7 @@ module.exports = new Command({
         let guessed = [];
 
         if (guessed.length < 5) {
-          let max = players.length * 6;
+          let max = players.length * 2;
           runGame(0, q, guessed, 0, max);
           // startGame();
         } else {
@@ -123,7 +124,13 @@ module.exports = new Command({
     function sendQuestion(quest, guessed) {
       let emojis = ["0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
 
-      let q = " ```fix\n" + "QUESTION: " + quest.question + "\n\n";
+      let q =
+        " ```fix\n" +
+        "Round " +
+        round +
+        "\n\nQUESTION: " +
+        quest.question +
+        "\n\n";
       for (let i = 0; i < quest.answers.length; i++) {
         if (guessed.includes(i)) {
           q += i + 1 + ". " + quest.answers[i].answer + " ";
@@ -198,6 +205,7 @@ module.exports = new Command({
     }
 
     function endRound(q) {
+      round++;
       collector.stop();
       // let answers = "\n> ** 1.  Toys `23`**\n\n > ** 2.  Men** \n\n > ** 3.  Wow**";
       // let results = ` 1. <@${players[0].id}> \n\n 2.  <@${players[0].id}>\n\n 3.  <@${players[0].id}>`;
@@ -240,7 +248,47 @@ module.exports = new Command({
         )
         .setTimestamp();
 
+      const filter = (msg) => {
+        if (msg.author.id === message.author.id) {
+          return true;
+        } else {
+          if (msg.content.toLowerCase() === "continue") {
+            msg.reply(`Only <@${message.author.id}> can continue the game`);
+          }
+          return false;
+        }
+      };
+
       message.channel.send({ embeds: [initialEmbed] });
+
+      const finalCollector = message.channel.createMessageCollector({
+        filter,
+        max: 1,
+        time: 240000,
+        errors: ["time"],
+      });
+
+      finalCollector.on("collect", (msg) => {
+        collector.stop();
+      });
+
+      finalCollector.on("end", (collected) => {
+        if (collected.first().content.toLowerCase() === "continue") {
+          collected
+            .first()
+            .reply(`<@${message.author.id}> has started a new round`);
+          startGame();
+        } else {
+          reset();
+        }
+      });
+    }
+
+    function reset() {
+      for (let i = 0; i < players.length; i++) {
+        players[i].score = 0;
+      }
+      round = 1;
     }
   },
 });
