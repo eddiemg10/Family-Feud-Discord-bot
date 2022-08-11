@@ -5,7 +5,7 @@ const Discord = require("discord.js");
 const Client = require("./structures/Client.js");
 
 const client = new Client();
-client.user.setAvatar("./avatar.png");
+
 //Use this for production
 client.start(process.env.token);
 
