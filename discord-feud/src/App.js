@@ -3,6 +3,7 @@ import "./App.css";
 import icon from "./images/bot-logo.png";
 import discord from "./images/discord-logo.png";
 import line from "./images/line.png";
+import demo from "./images/demo.gif";
 
 // import "./index.css";
 
@@ -96,7 +97,9 @@ function App() {
 
         <div>
           <h2 className="text-3xl font-semibold text-start mt-16">Example</h2>
-          <div></div>
+          <div className="mt-10 w-full">
+            <img src={demo} />
+          </div>
         </div>
       </div>
     </div>
