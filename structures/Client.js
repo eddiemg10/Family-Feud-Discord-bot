@@ -6,6 +6,7 @@ const Command = require("./Command.js");
 
 const Event = require("./Event.js");
 
+//Use this for development
 // const config = require("../config.json");
 
 const fs = require("fs");
@@ -18,7 +19,11 @@ class Client extends Discord.Client {
      * @type{Discord.Collection<string, Commands>}
      */
     this.commands = new Discord.Collection();
+
+    //Use this for development
     // this.prefix = config.prefix;
+
+    //Use this for production
     this.prefix = process.env.prefix;
   }
 
