@@ -6,44 +6,41 @@ const Command = require("./Command.js");
 
 const Event = require("./Event.js");
 
-const config = require("../config.json");
+// const config = require("../config.json");
 
-const fs = require('fs');
+const fs = require("fs");
 
-class Client extends Discord.Client{
+class Client extends Discord.Client {
+  constructor() {
+    super({ intents });
 
-    constructor(){
-        super({intents});
+    /**
+     * @type{Discord.Collection<string, Commands>}
+     */
+    this.commands = new Discord.Collection();
+    // this.prefix = config.prefix;
+    this.prefix = process.env.prefix;
+  }
 
-        /**
-         * @type{Discord.Collection<string, Commands>}
-         */
-        this.commands = new Discord.Collection();
-        this.prefix = config.prefix;
-    }
+  start(token) {
+    fs.readdirSync("./commands")
+      .filter((file) => file.endsWith(".js"))
+      .forEach((file) => {
+        const command = require(`../commands/${file}`);
+        console.log(`Command ${command.name} loaded`);
+        this.commands.set(command.name, command);
+      });
 
-    start(token){
+    fs.readdirSync("./events")
+      .filter((file) => file.endsWith(".js"))
+      .forEach((file) => {
+        const event = require(`../events/${file}`);
+        console.log(`Event ${event.event} loaded`);
+        this.on(event.event, event.run.bind(null, this));
+      });
 
-        fs.readdirSync("./commands")
-            .filter(file => file.endsWith('.js'))
-            .forEach(file => {
-            const command = require(`../commands/${file}`);
-            console.log(`Command ${command.name} loaded`);
-            this.commands.set(command.name, command);
-            });
-
-
-            fs.readdirSync("./events")
-            .filter(file => file.endsWith('.js'))
-            .forEach(file => {
-            const event = require(`../events/${file}`);
-            console.log(`Event ${event.event} loaded`);
-            this.on(event.event, event.run.bind(null, this));
-            });    
-
-            this.login(token);
-
-    }
+    this.login(token);
+  }
 }
 
 module.exports = Client;
